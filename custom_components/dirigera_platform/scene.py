@@ -6,7 +6,7 @@ from typing import Any
 #from dirigera import Hub
 from .dirigera_lib_patch import HubX, HackScene
 #from dirigera.devices.scene import Scene as DirigeraScene
-#from dirigera.devices.scene import Trigger, TriggerDetails, EndTriggerEvent
+from dirigera.devices.scene import Trigger, TriggerDetails, EndTriggerEvent
 
 from homeassistant.components.scene import Scene
 from homeassistant.config_entries import ConfigEntry
@@ -41,24 +41,24 @@ class ikea_scene(Scene):
     def __init__(self, hub: HubX, scene: HackScene) -> None:
         """Initialize."""
         self._hub = hub
-        self._scene = scene 
-    
+        self._scene = scene
+
     @property
     def unique_id(self):
-        return self._scene.id 
-    
+        return self._scene.id
+
     @property
     def name(self) -> str:
         """Return name from Dirigera."""
         #return self._dirigera_scene.info.name
-        return self._scene.name 
-    
+        return self._scene.name
+
     @property
     def icon(self) -> str:
         """Return suitable replacement icon."""
         #return to_hass_icon(self._dirigera_scene.info.icon)
         return ikea_to_hass_icon(self._scene.icon)
-    
+
     async def async_activate(self, **kwargs: Any) -> None:
         """Trigger Dirigera Scene."""
         logger.debug("Activating scene '%s' (%s)", self.name, self.unique_id)
