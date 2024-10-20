@@ -6,8 +6,8 @@ from dirigera import Hub
 
 from dirigera.devices.device import Attributes, Device
 from dirigera.hub.abstract_smart_home_hub import AbstractSmartHomeHub
-from dirigera.devices.scene import Info, Icon,  SceneType, Trigger, TriggerDetails, ControllerType
-import logging 
+from dirigera.devices.scene import Info, Icon,  SceneType, Trigger, TriggerDetails, ControllerType, EndTriggerEvent
+import logging
 
 logger = logging.getLogger("custom_components.dirigera_platform")
 
@@ -25,7 +25,7 @@ class HubX(Hub):
         devices = self.get("/devices")
         controllers = list(filter(lambda x: x["type"] == "controller", devices))
         return [dict_to_controller(controller, self) for controller in controllers]
-    
+
     # Scenes are a problem so making a hack
     def get_scenes(self):
         """
@@ -33,16 +33,16 @@ class HubX(Hub):
         """
         scenes = self.get("/scenes")
         #scenes = list(filter(lambda x: x["type"] == "scene", devices))
-        
+
         return [HackScene.make_scene(self, scene) for scene in scenes]
-    
+
     def get_scene_by_id(self, scene_id: str):
         """
         Fetches a specific scene by a given id
         """
         data = self.get(f"/scenes/{scene_id}")
         return HackScene.make_scene(self, data)
-    
+
     def create_empty_scene(self, controller_id: str, clicks_supported:list):
         logging.debug(f"Creating empty scene for controller : {controller_id} with clicks : {clicks_supported}")
         for click in clicks_supported:
@@ -58,9 +58,9 @@ class HubX(Hub):
                         "type": "customScene",
                         "triggers":[
                                         {
-                                            "type": "controller", 
-                                            "disabled": False, 
-                                            "trigger": 
+                                            "type": "controller",
+                                            "disabled": False,
+                                            "trigger":
                                                 {
                                                     "controllerType": "shortcutController",
                                                     "clickPattern": click,
@@ -71,16 +71,16 @@ class HubX(Hub):
                                     ],
                 "actions": []
             }
-            
+
             self.post("/scenes/", data=data)
-        
+
     def delete_empty_scenes(self):
         scenes = self.get_scenes()
         for scene in scenes:
             if scene.name.startswith("dirigera_integration_empty_scene_"):
                 logging.debug(f"Deleting Scene id: {scene.id} name: {scene.name}...")
                 self.delete_scene(scene.id)
-                
+
 class ControllerAttributesX(Attributes):
     is_on: Optional[bool] = None
     battery_percentage: Optional[int] = None
@@ -113,20 +113,20 @@ class HackScene():
 
     def __init__(self, hub, id, name, icon):
         self.hub = hub
-        self.id = id 
-        self.name = name 
+        self.id = id
+        self.name = name
         self.icon = icon
 
     def parse_scene_json(json_data):
         id = json_data["id"]
         name = json_data["info"]["name"]
         icon = json_data["info"]["icon"]
-        return id, name, icon 
-    
+        return id, name, icon
+
     def make_scene(dirigera_client, json_data):
         id, name, icon = HackScene.parse_scene_json(json_data)
         return HackScene(dirigera_client, id, name, icon)
-    
+
     def reload(self) -> HackScene:
         data = self.dirigera_client.get(route=f"/scenes/{self.id}")
         return HackScene.make_scene(self, data)
