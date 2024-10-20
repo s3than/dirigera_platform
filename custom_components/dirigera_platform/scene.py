@@ -6,7 +6,7 @@ from typing import Any
 #from dirigera import Hub
 from .dirigera_lib_patch import HubX, HackScene
 #from dirigera.devices.scene import Scene as DirigeraScene
-# from dirigera.devices.scene import Trigger, TriggerDetails, EndTriggerEvent
+from dirigera.devices.scene import Trigger, TriggerDetails, EndTriggerEvent
 
 from homeassistant.components.scene import Scene
 from homeassistant.config_entries import ConfigEntry
